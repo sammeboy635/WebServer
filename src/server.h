@@ -7,6 +7,8 @@
 #include <arpa/inet.h>
 #include <iostream>
 
+#include "settings.h"
+
 enum HTTPMethods
 {
     CONNECT,
@@ -20,6 +22,14 @@ enum HTTPMethods
     TRACE
 };
 
+struct Set
+{
+    int maxfd;
+    fd_set fds;
+    int sockfdslen;
+    int sockfds[SERVER_MAX_CONNECTIONS];
+};
+
 std::string server_file_read(std::string fileLocation);
 void server_debug_print(std::string frmt, std::string debugMessage);
 void error(std::string errorMessage);
@@ -27,28 +37,18 @@ void error(std::string errorMessage);
 class Server
 {
 private:
-    /* data */
-public:
-    struct sockaddr_in clientAddr;
-    socklen_t clientAddrLen;
     int serverfd, clientfd;
-    fd_set listenSet;
+    Set set;
+
+    void connection_read(int clientsfds);
+
+public:
     Server();
     ~Server();
     void connection_listen();
+    void connection_accept(int _serverfd);
+    void connection_set_loop();
     void connection_read();
-    void connection_accept();
-};
-
-class Connection
-{
-private:
-    int clientfd;
-
-public:
-    Connection(int clientfd);
-    ~Connection();
-    void conn_recvieve();
 };
 
 #endif
